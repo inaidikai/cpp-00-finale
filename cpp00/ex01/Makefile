@@ -1,18 +1,15 @@
-NAME = phonebook
-CC = c++
+NAME = Phonebook
+CC = g++
 STD = -std=c++98 -pedantic
 FLAGS = -Wall -Wextra -Werror
 SANITIZE = -g -fsanitize=address
 
-SRC_NAME =	contact.cpp \
-			phonebook.cpp \
-			main.cpp \
-
-INCLUDES = contact.hpp \
-		   phonebook.hpp \
+SRC_NAME =	Contact.cpp  \
+			PhoneBook.cpp \
+			main.cpp
 
 OBJ_NAME = $(SRC_NAME:.cpp=.o)
-OBJ = $(addprefix $(OBJ_DIR),$(OBJ_NAME))
+OBJ = $(OBJ_NAME)
 
 
 all: $(NAME)
@@ -21,7 +18,7 @@ $(NAME): $(OBJ)
 	$(CC) $(STD) $(FLAGS) -o $(NAME) $(OBJ)
 	@echo "Compilation done."
 
-$(OBJ_DIR)%.o: %.cpp $(INCLUDES)
+$(OBJ_DIR)%.o: %.cpp
 	$(CC) $(STD) $(FLAGS) -c $< -I. -o $@
 
 clean:

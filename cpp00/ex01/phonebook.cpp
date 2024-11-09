@@ -1,131 +1,51 @@
-/* ************************************************************************** */
-#include <iomanip>
-#include <iostream>
 
-#include "phonebook.hpp"
+#include "PhoneBook.hpp"
+#include <iomanip> // setw
 
-phonebook::phonebook(void) : _totalNumberOfContacts(8)
+PhoneBook::PhoneBook(): index(0), filled(0) {}
+PhoneBook::~PhoneBook() {}
+
+void PhoneBook::add_contact(Contact contact)
 {
+    this->contacts[index] = contact;
+    index = (index + 1) % 8;
+    if (filled < 8)
+        filled++;
 }
 
-phonebook::~phonebook(void)
+void PhoneBook::display_contacts()
 {
-}
-
-// ************************************************************************** //
-//                                                                            //
-//                             Adding entry                                   //
-//                                                                            //
-// ************************************************************************** //
-void phonebook::addNewEntry(void)
-{
-    int indexToInsert = this->_getIndexToInsert();
-    std::cout << std::endl;
-    this->_contactsList[indexToInsert].addSingleField("FIRST");
-    this->_contactsList[indexToInsert].addSingleField("LAST");
-    this->_contactsList[indexToInsert].addSingleField("NICK");
-    this->_contactsList[indexToInsert].addSingleField("PHONE");
-    this->_contactsList[indexToInsert].addSingleField("SECRET");
-
-    this->_contactsList[indexToInsert].setIsEmptyToFalse();
-}
-
-void outputTruncatedValue(std::string value)
-{
-    std::cout << std::setfill(' ') << std::setw(10);
-    if (value.length() <= 10)
-        std::cout << value << "|";
-    else
-        std::cout << value.substr(0, 9).append(".") << "|";
-}
-
-void phonebook::_outputPopulatedContacts(void) const
-{
-    std::cout << ".__________.__________.__________.__________." << std::endl;
-    std::cout << "|     index|     first|      last|      nick|" << std::endl;
-    std::cout << "|——————————|——————————|——————————|——————————|" << std::endl;
-
-    for (int i = 0; i < this->_totalNumberOfContacts; i++)
+    std::cout   << std::setw(10) << "Index" << "|"
+                << std::setw(10) << "First Name" << "|"
+                << std::setw(10) << "Last Name" << "|"
+                << std::setw(10) << "Nickname" << "\n";
+    for(int i = 0; i < filled; ++i)
     {
-        if (this->_contactsList[i].getIsEmpty())
-            continue;
-
-        std::cout << "|";
-        std::cout << std::setfill(' ') << std::setw(10);
-        std::cout << i + 1 << "|";
-        outputTruncatedValue(this->_contactsList[i].getFirstName());
-        outputTruncatedValue(this->_contactsList[i].getLastName());
-        outputTruncatedValue(this->_contactsList[i].getNickName());
-        std::cout << std::endl;
-        std::cout << "|----------|----------|----------|----------|" << std::endl;
+        std::cout   << std::setw(10) << i + 1 << "|"
+                    << std::setw(10) << check_text_len(contacts[i].get_f_name()) << "|"
+                    << std::setw(10) << check_text_len(contacts[i].get_l_name()) << "|"
+                    << std::setw(10) << check_text_len(contacts[i].get_n_name()) << "\n";
     }
 }
 
-void phonebook::displayAllContacts(void) const
+std::string PhoneBook::check_text_len(const std::string &str)
 {
-    if (this->getNumberOfValidContacts() == 0)
+    if(str.length() > 10)
+        return str.substr(0,9) + ".";
+    return str;
+}
+
+void PhoneBook::display_one_contact(int index)
+{
+    if(index < 1 || index > filled)
     {
-        std::cout << std::endl
-                  << "No contacts to show. ADD a new one." << std::endl;
+        std::cout << "\033[31mInvalid index\033[0m!" << "\n";
+        return ;
     }
-    else
-        _outputPopulatedContacts();
+    Contact &con = contacts[index - 1];
+        std::cout   << "First Name: " << con.get_f_name() << "\n"
+                    << "Last Name: " << con.get_l_name() << "\n"
+                    << "Nickname: " << con.get_n_name() << "\n"
+                    << "Phone Number: " << con.get_phone() << "\n"
+                    << "Darkest Secret: " << con.get_secret() << "\n";
 }
-
-void phonebook::promptAndShowEntryByIndex(void) const
-{
-    std::string input;
-
-    while (1)
-    {
-        std::cout << std::endl
-                  << "Enter index of entry to show: ";
-        std::getline(std::cin, input);
-
-        int indexToShow = std::atoi(input.c_str());
-        if (!input.length())
-            continue;
-        if (indexToShow <= 0 || indexToShow > this->getNumberOfValidContacts() ||
-            indexToShow > this->_totalNumberOfContacts)
-        {
-            std::cout << std::endl
-                      << "Invalid index." << std::endl;
-            continue;
-        }
-        this->_displaySingleEntryDetails(indexToShow - 1);
-        return;
-    }
-}
-
-void phonebook::_displaySingleEntryDetails(int index) const
-{
-    std::cout << std::endl;
-    std::cout << std::setfill('.') << std::setw(25) << std::left << "FIRST NAME" << this->_contactsList[index].getFirstName() << std::endl;
-    std::cout << std::setfill('.') << std::setw(25) << std::left << "LAST NAME" << this->_contactsList[index].getLastName() << std::endl;
-    std::cout << std::setfill('.') << std::setw(25) << std::left << "NICKNAME" << this->_contactsList[index].getNickName() << std::endl;
-    std::cout << std::setfill('.') << std::setw(25) << std::left << "PHONE NUMBER" << this->_contactsList[index].getPhoneNumber() << std::endl;
-    std::cout << std::setfill('.') << std::setw(25) << std::left << "DARKEST SECRET" << this->_contactsList[index].getDarkestSecret() << std::endl;
-}
-
-int phonebook::getNumberOfValidContacts(void) const
-{
-    int numberOfContacts = 0; 
-    for (int i = 0; i < this->_totalNumberOfContacts; i++)
-    {
-        if (!this->_contactsList[i].getIsEmpty())
-        {
-            numberOfContacts++;
-        }
-    }
-    return numberOfContacts;
-}
-
-int phonebook::_getIndexToInsert(void) const
-{
-    int indexToInsert = this->getNumberOfValidContacts();
-    if (this->getNumberOfValidContacts() >= this->_totalNumberOfContacts)
-        return (0);
-    else
-        return (indexToInsert);
-}
-
